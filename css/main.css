@@ -1,0 +1,8 @@
+#title {
+  text-align: center;
+}
+
+.button-primary.button {
+  position: relative;
+  top: 4px;
+}
