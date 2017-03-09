@@ -1,9 +1,17 @@
 // Object for managing state
 var state = {
   movieData: {},
-  musicData: {}
+  musicData: {
+    albumTitle: '',
+    albumSpotifyID: '',
+    composer: '',
+    trackCount: 0,
+    tracks: [],
+    albumArtURL: ''
+  }
 };
 
+const SPOT_TOKEN="BQD4KXJT3tNQA_-DyX0BGAo8BnXA-eg_2kHLFW5tApy6i80YWQTzQHu1cRZ66zzshE_8Zr6-q79RIA9BFCUKHw5Osa51xjM0C1tWU9jlFbMMuVL5bz1V7ZFos1onHaYZe5dcf79AGJAvw7g";
 
 // for searching the DB for a movie title's ID
 const S_BASE_URL="https://api.themoviedb.org/3/search/movie?api_key=1710c94a1d9a1c75e363bf47a0f446b3";
@@ -48,28 +56,72 @@ function getGenres() {
 // API calls and handle data for a user search
 // Get the data from the movie API
 
-function getMovieData(userSearch) {....
-$.getJSON('http://moviedata.com/', function() {
-  // updateState() -->
-  // Poster image Link
-  // Description
-  // Any ratings
-  // year of release
-  // Cast
-  getMusicData(userSearch);
-});
+function getMovieData(userSearch) {
+// $.getJSON('http://moviedata.com/', function() {
+//   // updateState() -->
+//   // Poster image Link
+//   // Description
+//   // Any ratings
+//   // year of release
+//   // Cast
+//   getMusicData(userSearch);
+// });
 }
 
 // Get Data from the music API
-function getMusicData(userSearch) {....
-  $.getJSON('http://spotifydata.com/', function() {
+function getMusicData(userSearch) {
+  let SPOT_URL = 'https://api.spotify.com/v1/search/';
+  let albumQuery = {
+    q: userSearch,
+    type: 'album'
+  };
+  $.getJSON(SPOT_URL, albumQuery, function(response) {
+    console.log(response);
+    setMusicData(response);
     // updateState() -->
     // Album and tracks inside the album(s)
     // Links to the audio file
     // image of the album art
     // composer or various artists
-    renderToDOM();
+    // renderToDOM();
   });
+}
+
+function setMusicData(response){
+  // albumTitle
+  // composer
+  // albumArtURL
+  // trackCount
+  // tracks
+  state.musicData.albumTitle=response.albums.items[0].name;
+  state.musicData.albumSpotifyID=response.albums.items[0].id;
+  state.musicData.composer=response.albums.items[0].artists.name;
+  state.musicData.albumArtURL=response.albums.items[0].images[1].url;
+  var id = state.musicData.albumSpotifyID;
+  var SPOT_URL = 'https://api.spotify.com/v1/albums/'+id;
+  // let tracksQuery = {
+  //   q: id
+  // };
+  $.getJSON(SPOT_URL, function (response) {
+        state.musicData.tracks=response.tracks.items;
+        console.log("yo");
+        console.log(response);
+      });
+  // fetchTracks(state.musicData.albumSpotifyID, function(response){
+  //   state.musicData.tracks=response.tracks.items;
+  //   console.log(state.musicData);
+  // });
+}
+
+//get tracks of the album specified ID
+function fetchTracks(id, callback) {
+  $.getJSON({
+      url: 'https://api.spotify.com/v1/albums/'+id,
+      success: function (response) {
+        callback(response);
+      }
+    }
+  );
 }
 
 function loadData(userSearch) {
@@ -84,6 +136,8 @@ function handleSearch($btn, $input) {
     let userSearch = $input.val();
     // loadData(function() { updateState() }
     // renderToDOM();
+    console.log(userSearch);
+    getMusicData(userSearch);
   });
 }
 
