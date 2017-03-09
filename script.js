@@ -1,4 +1,10 @@
-// TMDB movie Database
+// Object for managing state
+var state = {
+  movieData: {},
+  musicData: {}
+};
+
+
 // for searching the DB for a movie title's ID
 const S_BASE_URL="https://api.themoviedb.org/3/search/movie?api_key=1710c94a1d9a1c75e363bf47a0f446b3";
 // The url path for getting the poster image
@@ -34,22 +40,69 @@ function getGenres() {
       genreIds.forEach(function(id) {
         getTitles(id);
       });
-      console.log(movieTitles);
+      //console.log(movieTitles);
     }
   });
 }
 
+// API calls and handle data for a user search
+// Get the data from the movie API
+
+function getMovieData(userSearch) {....
+$.getJSON('http://moviedata.com/', function() {
+  // updateState() -->
+  // Poster image Link
+  // Description
+  // Any ratings
+  // year of release
+  // Cast
+  getMusicData(userSearch);
+});
+}
+
+// Get Data from the music API
+function getMusicData(userSearch) {....
+  $.getJSON('http://spotifydata.com/', function() {
+    // updateState() -->
+    // Album and tracks inside the album(s)
+    // Links to the audio file
+    // image of the album art
+    // composer or various artists
+    renderToDOM();
+  });
+}
+
+function loadData(userSearch) {
+  getMovieData(userSearch);
+}
+
+// Event Listener
+function handleSearch($btn, $input) {
+  $btn.on("click", function(e) {
+    let movieLoaded = false;
+    let spotifyLoaded = false;
+    let userSearch = $input.val();
+    // loadData(function() { updateState() }
+    // renderToDOM();
+  });
+}
+
+
+// Invoke Functions
 $(document).ready(function() {
 
   getGenres();
 
-  $("#automplete-1").autocomplete({
+  $("#search").autocomplete({
      source: movieTitles,
      minLength: 2,
      delay: 500
   });
 
+  handleSearch($("#btn"), $("#search"));
+
 });
+
 
 
   // function makeQuery(baseUrl, callback, dataObj) {
