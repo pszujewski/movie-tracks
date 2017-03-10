@@ -1,3 +1,24 @@
+body {
+  background-position: center top;
+  background-attachment: fixed;
+  background-repeat: none;
+  -webkit-background-size: cover;
+  -moz-background-size: cover;
+  -o-background-size: cover;
+  background-size: cover;
+}
+h4.ten.columns {
+  font-weight: bold;
+}
+.custom-background{
+  top: 0;
+  left: 0;
+  position: fixed;
+  min-width: 100%;
+  min-height: 100%;
+  background-color: rgba(255, 255, 255, 0.85);
+}
+
 #global {
   margin-top: 50px;
 }
@@ -28,4 +49,36 @@
 
 #desc {
   margin-bottom: 0;
+}
+.album-title {
+  font-size:1.9em;
+  font-weight:bold;
+  margin-top: 40px;
+  border-top: 1px solid #888;
+  padding-top: 20px;
+}
+
+.album-art {
+  width:100%;
+}
+
+.track-name {
+  padding:20px;
+  cursor: pointer;
+}
+.track-name:hover {
+  color: #fff;
+  background-color: #33c3f0;
+}
+
+.fa.fa-play-circle, .fa.fa-stop-circle {
+  float: right;
+  font-size: 25px;
+  padding-left: 5px;
+}
+
+@media (max-width: 545px) {
+  .button-primary.button {
+    width: 100%;
+  }
 }

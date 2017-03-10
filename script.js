@@ -147,11 +147,16 @@ function setMusicInState(response) {
 // Renders the music data into the DOM
 function renderMusic(state, $music) {
   let stringMusicHTML = '';
-  stringMusicHTML+=`<h3 style="font-size:1.9em;font-weight:bold;">${state.musicData.albumTitle}</h3><div style="float:left"><img style="margin-right:20px" src="${state.musicData.albumArtURL}" /></div><ol>`;
+  stringMusicHTML+=`<h3 class="album-title">${state.musicData.albumTitle}</h3>
+                    <div class="four columns">
+                      <img class="album-art" src="${state.musicData.albumArtURL}" alt="Album Art for ${state.musicData.albumTitle}" />
+                    </div>
+                    <div class="seven columns track-list">
+                    <ol>`;
   for (i=0; i<state.musicData.tracks.length; i++) {
-    stringMusicHTML+=`<li class="track-name" data-trackNum="${i}">${state.musicData.tracks[i].name}</li>`;
+    stringMusicHTML+=`<li class="track-name" data-trackNum="${i}"><i class="fa fa-play-circle play-status" aria-hidden="true"></i>${state.musicData.tracks[i].name}</li>`;
   }
-  stringMusicHTML+=`</ol>`;
+  stringMusicHTML+=`</div></ol>`;
   $music.html(stringMusicHTML);
 }
 
@@ -177,6 +182,9 @@ function getMovieData(searchTerm) {
           // getMusicData() --> Goes here
           // Movie data will be retrieved first and then the music data
           console.log(result);
+          // setbackground
+          $('body').css({ "background-image": `url(${state.movieData.poster})` });
+          //$('body').attr('style', `background:url('${state.movieData.poster}') 100% 100% no-repeat center center;`);
           getMusicData(searchTerm);
         }
       });
@@ -238,15 +246,20 @@ function handleSearch($btn, $input) {
 function playMusic($container) {
   $container.on('click', function(event) {
     let target= event.target;
+    console.log(target);
+    $('.fa-stop-circle').removeClass('fa-stop-circle').addClass('fa-play-circle');
     if(state.musicData.isPlaying) {
       audioPlayer.pause();
-      $('.track-name').removeClass('js-isPlaying');
+      // $('.track-name').removeClass('js-isPlaying');
+
+      $(target).find('i').removeClass('fa-stop-circle').addClass('fa-play-circle');
       state.musicData.isPlaying = false;
     } else {
+      state.musicData.isPlaying = true;
       audioPlayer = new Audio(state.musicData.tracks[target.dataset.tracknum].preview_url);
       audioPlayer.play();
-      $(target).addClass('js-isPlaying');
-      state.musicData.isPlaying = true;
+      $(target).find('i').removeClass('fa-play-circle').addClass('fa-stop-circle');
+      //console.log()
     }
   });
 }
