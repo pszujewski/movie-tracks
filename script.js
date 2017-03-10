@@ -76,7 +76,6 @@ function getTitles(id) {
 // Save the ids in the genreIds array and invoke getTitles for each genre id
 function getGenres(state) {
   let listRequest = `https://api.themoviedb.org/3/genre/movie/list${MOVIE_API_KEY}&language=en-US`;
-  //console.log(rndm);
   $.ajax({
     url: listRequest,
     success: function(result) {
@@ -90,9 +89,9 @@ function getGenres(state) {
   });
 }
 
-// Funciton to handle API calls and handle data for a user search
-
-// Get Data from the music API
+// Funcitons to handle API calls and update data in state to be displayed
+// Get Data from the Music API
+// Functions to music data to update state and render music data in the DOM
 function getMusicData(userSearch) {
   let SPOT_URL = 'https://api.spotify.com/v1/search/';
   let albumQuery = {
@@ -101,36 +100,63 @@ function getMusicData(userSearch) {
   };
   $.getJSON(SPOT_URL, albumQuery, function(response) {
     // updates state --> links, image urls, artists name, tracks
-    setMusicData(response);
-    renderMusicDom(state);
+    setMusicInState(response);
   });
 }
 
 // Updates state with music data
-function setMusicData(response){
-  state.musicData.albumTitle = response.albums.items[0].name;
-  state.musicData.albumSpotifyID = response.albums.items[0].id;
-  state.musicData.composer = response.albums.items[0].artists.name;
-  state.musicData.albumArtURL = response.albums.items[0].images[1].url;
-  var id = state.musicData.albumSpotifyID;
-  var SPOT_URL = 'https://api.spotify.com/v1/albums/'+id;
-  $.getJSON(SPOT_URL, function (response) {
-        state.musicData.tracks=response.tracks.items;
-        console.log(response);
-      });
+function setMusicInState(response) {
+  var mc = state.musicData;
+  let bestCandidate = response.albums.items[0];
+  let bestScore = 0;
+  response.albums.items.forEach(function (album, idx) {
+    let newScore = 0;
+    if (album.name.toLowerCase().indexOf("soundtrack") !== -1) {
+      newScore += 10;
+    }
+    if (album.name.toLowerCase().indexOf("motion") !== -1) {
+      newScore += 7;
+    }
+    if (album.name.toLowerCase().indexOf("picture") !== -1) {
+      newScore += 7;
+    }
+    if (album.name.match(state.movieData.title)) {
+      console.log(album.name.match(state.movieData.title));
+      newScore += 15;
+    }
+    if (newScore > bestScore) {
+      bestScore = newScore;
+      bestCandidate = album;
+    }
+  });
+  let id = bestCandidate.id;
+  let SPOT_URL = 'https://api.spotify.com/v1/albums/'+id;
+  mc.albumTitle = bestCandidate.name;
+  mc.albumSpotifyID = bestCandidate.id;
+  mc.composer = bestCandidate.artists.name;
+  mc.albumArtURL = bestCandidate.images[1].url;
+  console.log(response);
+  $.getJSON(SPOT_URL, function(data) {
+      mc.tracks = data.tracks.items;
+      renderMovie(state, $("#movie-info"));
+      renderMusic(state, $('#music-info'));
+      //console.log(state.musicData);
+  });
 }
 
-function renderMusicDom(state) {
+// Renders the music data into the DOM
+function renderMusic(state, $music) {
   let stringMusicHTML = '';
   stringMusicHTML+=`<h3 style="font-size:1.9em;font-weight:bold;">${state.musicData.albumTitle}</h3><div style="float:left"><img style="margin-right:20px" src="${state.musicData.albumArtURL}" /></div><ol>`;
   for (i=0; i<state.musicData.tracks.length; i++) {
     stringMusicHTML+=`<li class="track-name" data-trackNum="${i}">${state.musicData.tracks[i].name}</li>`;
   }
   stringMusicHTML+=`</ol>`;
-  console.log(stringMusicHTML);
-  $('#music-info').html(stringMusicHTML);
+  $music.html(stringMusicHTML);
 }
 
+// Functions for handling the requests to the Movie DB
+// Functions to update the data to state and render that data follows as well
 function getMovieData(searchTerm) {
   $.ajax({
     url: S_BASE_URL,
@@ -148,21 +174,17 @@ function getMovieData(searchTerm) {
           state.movieData.tagline = result.tagline;
           state.movieData.site = result.homepage;
           state.movieData.backdropImg = "https://image.tmdb.org/t/p/w500"+result.backdrop_path;
-          //console.log(state.movieData);
           // getMusicData() --> Goes here
-          renderMovie(state, $("#movie-info"));
+          // Movie data will be retrieved first and then the music data
+          console.log(result);
+          getMusicData(searchTerm);
         }
       });
     }
   });
 }
 
-// Get Data from the music API function Declaration goes here
-// function getMusicData(userSearch) {....
-// Upon 'success' update state with music data
-// invoke renderMovie() and renderMusic()
-
-// Functions for rendering state to the DOM
+// Functions for rendering Movie data state to the DOM
 function doStars(state) {
   let numStars = getNumStars(state);
   for (let i=1; i<=numStars; i++) {
@@ -203,30 +225,31 @@ function renderMovie(state, $element) {
   doStars(state);
 }
 
-// renderMusic Function Declaration goes here
-// Render music data
 
 // Event Listeners
 // Handle each time a user searches for a movie title
 function handleSearch($btn, $input) {
   $btn.on("click", function(e) {
     let userSearch = $input.val();
+    getMovieData(userSearch);
   });
 }
 
-$('#music-info').on('click', function (event){
-  let target= event.target;
-  if(state.musicData.isPlaying) {
-    audioPlayer.pause();
-    $('.track-name').removeClass('js-isPlaying');
-    state.musicData.isPlaying = false;
-  } else {
-    audioPlayer = new Audio(state.musicData.tracks[target.dataset.tracknum].preview_url);
-    audioPlayer.play();
-    $(target).addClass('js-isPlaying');
-    state.musicData.isPlaying = true;
-  }
-});
+function playMusic($container) {
+  $container.on('click', function(event) {
+    let target= event.target;
+    if(state.musicData.isPlaying) {
+      audioPlayer.pause();
+      $('.track-name').removeClass('js-isPlaying');
+      state.musicData.isPlaying = false;
+    } else {
+      audioPlayer = new Audio(state.musicData.tracks[target.dataset.tracknum].preview_url);
+      audioPlayer.play();
+      $(target).addClass('js-isPlaying');
+      state.musicData.isPlaying = true;
+    }
+  });
+}
 
 // Handle the autocomplete functionality
 function doAutocomplete($input) {
@@ -261,4 +284,5 @@ $(document).ready(function() {
   doAutocomplete($("#search"));
   handleSearch($("#btn"), $("#search"));
   handleAddFavorite($("#movie-info"));
+  playMusic($('#music-info'));
 });

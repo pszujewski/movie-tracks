@@ -1,10 +1,14 @@
+#global {
+  margin-top: 50px;
+}
+
 #title {
   text-align: center;
 }
 
 .button-primary.button {
   position: relative;
-  top: 4px;
+  top: 5px;
 }
 
 #left-well {
