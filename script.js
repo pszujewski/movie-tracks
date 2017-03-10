@@ -126,10 +126,11 @@ function loadData(userSearch) {
 
 function renderMusicDom(state) {
   let stringMusicHTML = '';
-  stringMusicHTML+=`<h3>${state.musicData.albumTitle}</h3>`;
+  stringMusicHTML+=`<h3 style="font-size:1.9em;font-weight:bold;">${state.musicData.albumTitle}</h3><div style="float:left"><img style="margin-right:20px" src="${state.musicData.albumArtURL}" /></div><ol>`;
   for (i=0; i<state.musicData.tracks.length; i++) {
-    stringMusicHTML+=`<div style="float:left"><img src="${state.musicData.albumArtURL}" /></div>`;
+    stringMusicHTML+=`<li>${state.musicData.tracks[i].name}</li>`;
   }
+  stringMusicHTML+=`</ol>`;
   console.log(stringMusicHTML);
   $('#music-info').html(stringMusicHTML);
 }
