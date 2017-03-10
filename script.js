@@ -10,9 +10,6 @@ var state = {
     albumArtURL: ''
   }
 };
-
-const SPOT_TOKEN="BQD4KXJT3tNQA_-DyX0BGAo8BnXA-eg_2kHLFW5tApy6i80YWQTzQHu1cRZ66zzshE_8Zr6-q79RIA9BFCUKHw5Osa51xjM0C1tWU9jlFbMMuVL5bz1V7ZFos1onHaYZe5dcf79AGJAvw7g";
-
 // for searching the DB for a movie title's ID
 const S_BASE_URL="https://api.themoviedb.org/3/search/movie?api_key=1710c94a1d9a1c75e363bf47a0f446b3";
 // The url path for getting the poster image
@@ -104,7 +101,6 @@ function setMusicData(response){
   // };
   $.getJSON(SPOT_URL, function (response) {
         state.musicData.tracks=response.tracks.items;
-        console.log("yo");
         console.log(response);
       });
   // fetchTracks(state.musicData.albumSpotifyID, function(response){
@@ -128,6 +124,16 @@ function loadData(userSearch) {
   getMovieData(userSearch);
 }
 
+function renderMusicDom(state) {
+  let stringMusicHTML = '';
+  stringMusicHTML+=`<h3>${state.musicData.albumTitle}</h3>`;
+  for (i=0; i<state.musicData.tracks.length; i++) {
+    stringMusicHTML+=`<div style="float:left"><img src="${state.musicData.albumArtURL}" /></div>`;
+  }
+  console.log(stringMusicHTML);
+  $('#music-info').html(stringMusicHTML);
+}
+
 // Event Listener
 function handleSearch($btn, $input) {
   $btn.on("click", function(e) {
@@ -138,6 +144,7 @@ function handleSearch($btn, $input) {
     // renderToDOM();
     console.log(userSearch);
     getMusicData(userSearch);
+    renderMusicDom(state);
   });
 }
 
