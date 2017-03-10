@@ -6,3 +6,22 @@
   position: relative;
   top: 4px;
 }
+
+#left-well {
+  padding: 2% 0 0;
+}
+
+/*See Guardian of the galaxy*/
+
+#movie-poster {
+  display: inline-block;
+  width: 100%;
+}
+
+#year {
+  text-align: right;
+}
+
+#desc {
+  margin-bottom: 0;
+}
