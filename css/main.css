@@ -7,8 +7,18 @@ body {
   -o-background-size: cover;
   background-size: cover;
 }
+h1 {
+  font-family: 'Passion One', cursive;
+}
+h1 i {
+  font-size: 50px;
+}
 h4.ten.columns {
   font-weight: bold;
+}
+p.slogan {
+  font-style:italic;
+  text-align:center;
 }
 .custom-background{
   top: 0;
@@ -50,6 +60,7 @@ h4.ten.columns {
 #desc {
   margin-bottom: 0;
 }
+
 .album-title {
   font-size:1.9em;
   font-weight:bold;
