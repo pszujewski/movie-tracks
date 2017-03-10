@@ -91,7 +91,46 @@ function getGenres(state) {
 }
 
 // Funciton to handle API calls and handle data for a user search
-// Get the data from the movie API
+
+// Get Data from the music API
+function getMusicData(userSearch) {
+  let SPOT_URL = 'https://api.spotify.com/v1/search/';
+  let albumQuery = {
+    q: userSearch,
+    type: 'album'
+  };
+  $.getJSON(SPOT_URL, albumQuery, function(response) {
+    // updates state --> links, image urls, artists name, tracks
+    setMusicData(response);
+    renderMusicDom(state);
+  });
+}
+
+// Updates state with music data
+function setMusicData(response){
+  state.musicData.albumTitle = response.albums.items[0].name;
+  state.musicData.albumSpotifyID = response.albums.items[0].id;
+  state.musicData.composer = response.albums.items[0].artists.name;
+  state.musicData.albumArtURL = response.albums.items[0].images[1].url;
+  var id = state.musicData.albumSpotifyID;
+  var SPOT_URL = 'https://api.spotify.com/v1/albums/'+id;
+  $.getJSON(SPOT_URL, function (response) {
+        state.musicData.tracks=response.tracks.items;
+        console.log(response);
+      });
+}
+
+function renderMusicDom(state) {
+  let stringMusicHTML = '';
+  stringMusicHTML+=`<h3 style="font-size:1.9em;font-weight:bold;">${state.musicData.albumTitle}</h3><div style="float:left"><img style="margin-right:20px" src="${state.musicData.albumArtURL}" /></div><ol>`;
+  for (i=0; i<state.musicData.tracks.length; i++) {
+    stringMusicHTML+=`<li class="track-name" data-trackNum="${i}">${state.musicData.tracks[i].name}</li>`;
+  }
+  stringMusicHTML+=`</ol>`;
+  console.log(stringMusicHTML);
+  $('#music-info').html(stringMusicHTML);
+}
+
 function getMovieData(searchTerm) {
   $.ajax({
     url: S_BASE_URL,
@@ -172,9 +211,22 @@ function renderMovie(state, $element) {
 function handleSearch($btn, $input) {
   $btn.on("click", function(e) {
     let userSearch = $input.val();
-    getMovieData(userSearch);
   });
 }
+
+$('#music-info').on('click', function (event){
+  let target= event.target;
+  if(state.musicData.isPlaying) {
+    audioPlayer.pause();
+    $('.track-name').removeClass('js-isPlaying');
+    state.musicData.isPlaying = false;
+  } else {
+    audioPlayer = new Audio(state.musicData.tracks[target.dataset.tracknum].preview_url);
+    audioPlayer.play();
+    $(target).addClass('js-isPlaying');
+    state.musicData.isPlaying = true;
+  }
+});
 
 // Handle the autocomplete functionality
 function doAutocomplete($input) {
