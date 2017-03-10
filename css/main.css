@@ -6,3 +6,16 @@
   position: relative;
   top: 4px;
 }
+
+#inside-cont {
+  margin-top: 5px;
+}
+
+#movie-poster {
+  display: block;
+  width: 100%;
+}
+
+#year {
+  text-align: right;
+}
