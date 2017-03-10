@@ -14,22 +14,46 @@ var state = {
 // Empty arrays to hold separate data from the movie DB. JQuery UI's autocomplete
 // method will point to movieTitles as its 'source'
 // These arrays will be populated with data from the Movie DB upon loading the doc
-var genreIds = [];
-var movieTitles = [];
+var autocomp = {
+  genreIds: [],
+  movieTitles: []
+};
 
-//To generate random numbers
-function doRndm() {
-  return Math.floor(Math.random()*211);
+// Functions that modify or retrieve data from state
+function addFavorite(state) {
+  if (state.favorites.length < 5) {
+    state.favorites.push({ title: state.movieData.title,
+                           poster: state.movieData.poster });
+  } else {
+    alert("Please only add up to 5 favorites");
+  }
+}
+
+function removeFavorite(state, index) {
+  let favs = state.favorites;
+  favs.splice(index, 1);
+}
+
+function checkIsFavorite(state) {
+  let current = state.movieData;
+  let favs = state.favorites;
+  for (let i=0; i<favs.length; i++) {
+    if(favs[i].title === current.title) {
+      return [true, i];
+    }
+  }
+  return [false, 0];
 }
 
 // Determine the number of stars to associate with the movie
 function getNumStars(state) {
   let rating = state.movieData.rating;
-  if (rating > 8) { return 5}
-  else if (rating <= 8 && rating > 6) { return 4 }
-  else if (rating <= 6 && rating > 4) { return 3 }
-  else if (rating <= 4 && rating > 2) { return 2 }
-  else { return 1 }
+  if (rating > 8) { return 5; }
+  else if (rating <= 8 && rating > 6) { return 4; }
+  else if (rating <= 6 && rating > 4) { return 3; }
+  else if (rating <= 4 && rating > 2) { return 2; }
+  else if (rating === 0) { return 2; }
+  else { return 1; }
 }
 
 // Functions for populating the movies titles array for the autocomplete functionality
@@ -40,8 +64,8 @@ function getTitles(id) {
     url: genreReq,
     success: function(data) {
       data.results.forEach(function(item) {
-        if (movieTitles.indexOf(item.title) === -1) {
-          movieTitles.push(item.title);
+        if (autocomp.movieTitles.indexOf(item.title) === -1) {
+          autocomp.movieTitles.push(item.title);
         }
       });
     }
@@ -52,21 +76,16 @@ function getTitles(id) {
 // Save the ids in the genreIds array and invoke getTitles for each genre id
 function getGenres(state) {
   let listRequest = `https://api.themoviedb.org/3/genre/movie/list${MOVIE_API_KEY}&language=en-US`;
-  let rndm = [doRndm(), doRndm(), doRndm()];
-  console.log(rndm);
+  //console.log(rndm);
   $.ajax({
     url: listRequest,
     success: function(result) {
       result.genres.forEach(function(item) {
-        genreIds.push(item.id);
+        autocomp.genreIds.push(item.id);
       });
-      genreIds.forEach(function(id) {
+      autocomp.genreIds.forEach(function(id) {
         getTitles(id);
       });
-      rndm.forEach(function(num) {
-        state.rndmFilms.push(movieTitles[num]);
-      });
-      console.log(state.rndmFilms);
     }
   });
 }
@@ -91,6 +110,7 @@ function getMovieData(searchTerm) {
           state.movieData.site = result.homepage;
           state.movieData.backdropImg = "https://image.tmdb.org/t/p/w500"+result.backdrop_path;
           //console.log(state.movieData);
+          // getMusicData() --> Goes here
           renderMovie(state, $("#movie-info"));
         }
       });
@@ -98,21 +118,10 @@ function getMovieData(searchTerm) {
   });
 }
 
-// Get Data from the music API
+// Get Data from the music API function Declaration goes here
 // function getMusicData(userSearch) {....
-//   $.getJSON('http://spotifydata.com/', function() {
-//     // updateState() -->
-//     // Album and tracks inside the album(s)
-//     // Links to the audio file
-//     // image of the album art
-//     // composer or various artists
-//     renderToDOM();
-//   });
-// }
-//
-// function loadData(userSearch) {
-//   getMovieData(userSearch);
-// }
+// Upon 'success' update state with music data
+// invoke renderMovie() and renderMusic()
 
 // Functions for rendering state to the DOM
 function doStars(state) {
@@ -125,13 +134,14 @@ function doStars(state) {
 
 function renderMovie(state, $element) {
   let m = state.movieData;
-  let filmHtml = (`<div class='three columns'>
-                <div class="img-wrapper">
+  let isFavorite = checkIsFavorite(state);
+  let heart = isFavorite[0] ? "fa-heart" : "fa-heart-o";
+  let filmHtml =
+              (`<div class='three columns' id='left-well'>
                   <img src=${m.poster} id='movie-poster'>
-                </div>
                </div>
                <div class='nine columns'>
-                <div class='row' id='inside-cont'>
+                <div class='row'>
                   <div class='ten columns'>
                     <h4>${m.title}</h4>
                     <div id="stars-container">
@@ -141,25 +151,26 @@ function renderMovie(state, $element) {
                       <i id='star-4' class="fa fa-star-o" aria-hidden="true"></i>
                       <i id='star-5' class="fa fa-star-o" aria-hidden="true"></i>
                     </div>
-                    <p><i class="fa fa-heart-o" aria-hidden="true"></i>  Add to favorites</p>
+                    <p><i id='heart' class="fa ${heart}" aria-hidden="true"></i>  Add to favorites</p>
                   </div>
-                  <div class='two columns'>
+                  <div class='two columns' id='year-wrapper'>
                    <h4 id='year'>(${m.year})</h4>
                   </div>
                 </div>
                 <p><em>${m.tagline}</em></p>
-                <p>${m.desc}</p>
+                <p id='desc'>${m.desc}</p>
                </div>`);
   $element.html(filmHtml);
   doStars(state);
 }
 
+// renderMusic Function Declaration goes here
+// Render music data
+
 // Event Listeners
 // Handle each time a user searches for a movie title
 function handleSearch($btn, $input) {
   $btn.on("click", function(e) {
-    let movieLoaded = false;
-    let spotifyLoaded = false;
     let userSearch = $input.val();
     getMovieData(userSearch);
   });
@@ -167,16 +178,35 @@ function handleSearch($btn, $input) {
 
 // Handle the autocomplete functionality
 function doAutocomplete($input) {
+  getGenres(state);
   $input.autocomplete({
-     source: movieTitles,
+     source: autocomp.movieTitles,
      minLength: 2,
-     delay: 500
+     delay: 300
   });
+}
+
+function handleAddFavorite($container) {
+  $container.on("click", "#heart", function(e) {
+    let isFavorite = checkIsFavorite(state);
+    if (!isFavorite[0]) {
+      addFavorite(state);
+      $("#heart").removeClass("fa-heart-o").addClass("fa-heart");
+    } else {
+      removeFavorite(state, isFavorite[1]);
+      $("#heart").removeClass("fa-heart").addClass("fa-heart-o");
+    }
+  });
+}
+
+function handleGetFavorite($element) {
+  console.log('to do');
+  // If you click on a button it will handle ajax call for the favoite
 }
 
 // Invoke Functions, document ready...
 $(document).ready(function() {
-  getGenres(state);
   doAutocomplete($("#search"));
   handleSearch($("#btn"), $("#search"));
+  handleAddFavorite($("#movie-info"));
 });
