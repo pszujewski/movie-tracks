@@ -20,6 +20,7 @@ var autocomp = {
 };
 
 // Functions that modify or retrieve data from state
+// input: state, returns: alert if favorites less than 5
 function addFavorite(state) {
   if (state.favorites.length < 5) {
     state.favorites.push({ title: state.movieData.title,
@@ -34,6 +35,7 @@ function removeFavorite(state, index) {
   favs.splice(index, 1);
 }
 
+//input: state, retuns boolean value
 function checkIsFavorite(state) {
   let current = state.movieData;
   let favs = state.favorites;
@@ -45,7 +47,7 @@ function checkIsFavorite(state) {
   return [false, 0];
 }
 
-// Determine the number of stars to associate with the movie
+//Converts ten point rating to five star rating and returns it
 function getNumStars(state) {
   let rating = state.movieData.rating;
   if (rating > 8) { return 5; }
@@ -56,7 +58,8 @@ function getNumStars(state) {
   else { return 1; }
 }
 
-// Functions for populating the movies titles array for the autocomplete functionality
+
+// Functions for populating the movie titles array for the autocomplete functionality
 // query to movie DM to get a list of titles under each genre
 function getTitles(id) {
   let genreReq = `https://api.themoviedb.org/3/genre/${id}/movies${MOVIE_API_KEY}&language=en-US&include_adult=false&sort_by=created_at.asc`;
@@ -89,7 +92,7 @@ function getGenres(state) {
   });
 }
 
-// Funcitons to handle API calls and update data in state to be displayed
+// Functions to handle API calls and update data in state to be displayed
 // Get Data from the Music API
 // Functions to music data to update state and render music data in the DOM
 function getMusicData(userSearch) {
@@ -104,6 +107,7 @@ function getMusicData(userSearch) {
   });
 }
 
+//This funciton can be broken down into two
 // Updates state with music data
 function setMusicInState(response) {
   var mc = state.musicData;
@@ -285,11 +289,6 @@ function handleAddFavorite($container) {
       $("#heart").removeClass("fa-heart").addClass("fa-heart-o");
     }
   });
-}
-
-function handleGetFavorite($element) {
-  console.log('to do');
-  // If you click on a button it will handle ajax call for the favoite
 }
 
 // Invoke Functions, document ready...
